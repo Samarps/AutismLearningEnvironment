@@ -18,7 +18,7 @@ public class ClickManager : MonoBehaviour
                 if (obj != null)
                 {
                     obj.Highlight(true);
-                    lessonManager.NextTask();
+                    lessonManager.OnObjectClicked(hit.collider.gameObject);
                 }
             }
         }
