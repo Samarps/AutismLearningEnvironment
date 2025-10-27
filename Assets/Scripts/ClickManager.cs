@@ -5,7 +5,6 @@ using UnityEngine;
 public class ClickManager : MonoBehaviour
 {
     public LessonManager lessonManager;
-    public SimpleInteractable[] interactables;
 
     void Update()
     {
@@ -17,8 +16,9 @@ public class ClickManager : MonoBehaviour
                 var obj = hit.collider.GetComponent<SimpleInteractable>();
                 if (obj != null)
                 {
-                    obj.Highlight(true);
-                    lessonManager.OnObjectClicked(hit.collider.gameObject);
+                    // Instead of highlighting here,
+                    // let the LessonManager decide if this was correct.
+                    lessonManager.OnObjectClicked(obj.gameObject);
                 }
             }
         }

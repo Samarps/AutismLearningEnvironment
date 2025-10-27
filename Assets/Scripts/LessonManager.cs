@@ -25,6 +25,8 @@ public class LessonManager : MonoBehaviour
     private int currentTask = 0;
     private bool allDone = false;
 
+    private SimpleInteractable lastHighlighted = null; // track previous correct toy
+
     void Start()
     {
         // If no tasks are defined, make some defaults
@@ -53,12 +55,26 @@ public class LessonManager : MonoBehaviour
             return;
 
         string expectedName = tasks[currentTask].objectName;
+        var interactable = clicked.GetComponent<SimpleInteractable>();
+
+        // Reset last highlighted object (return its color to normal)
+        if (lastHighlighted != null)
+        {
+            lastHighlighted.Highlight(false);
+            lastHighlighted = null;
+        }
 
         if (clicked.name == expectedName)
         {
             // Correct object clicked
             if (tracker != null)
                 tracker.FinishTask();
+
+            if (interactable != null)
+            {
+                interactable.Highlight(true);
+                lastHighlighted = interactable;
+            }
 
             currentTask++;
 
@@ -80,7 +96,7 @@ public class LessonManager : MonoBehaviour
         }
         else
         {
-            // Wrong object clicked
+            // Wrong object clicked (no highlight)
             if (tracker != null)
                 tracker.RegisterMistake();
 

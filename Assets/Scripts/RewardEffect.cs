@@ -3,9 +3,14 @@ using UnityEngine.UI;
 
 public class RewardEffect : MonoBehaviour
 {
+    [Header("Audio & Visual Feedback")]
     public AudioSource audioSource;
     public AudioClip successSound;
+    public ParticleSystem confettiEffect;
+
+    [Header("UI Reference")]
     public Text taskText;
+
     private bool triggered = false;
 
     public void TriggerReward()
@@ -13,32 +18,25 @@ public class RewardEffect : MonoBehaviour
         if (triggered) return;
         triggered = true;
 
-        Debug.Log("✅ RewardEffect triggered!");
+        // Stop any existing confetti effect (reset it)
+        if (confettiEffect != null)
+            confettiEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
+        // Play success sound if available
         if (audioSource != null && successSound != null)
-        {
             audioSource.PlayOneShot(successSound);
-            Debug.Log("🎵 Playing success sound: " + successSound.name);
-        }
-        else
-        {
-            if (audioSource == null)
-                Debug.LogWarning("⚠️ RewardEffect: Missing AudioSource reference!");
-            if (successSound == null)
-                Debug.LogWarning("⚠️ RewardEffect: Missing Success Sound reference!");
-        }
 
-        // Start the flash animation
+        // Play confetti or sparkle effect if assigned
+        if (confettiEffect != null)
+            confettiEffect.Play();
+
+        // Start text flashing animation
         StartCoroutine(FlashText());
     }
 
     private System.Collections.IEnumerator FlashText()
     {
-        if (taskText == null)
-        {
-            Debug.LogWarning("⚠️ RewardEffect: No TaskText assigned for flashing effect!");
-            yield break;
-        }
+        if (taskText == null) yield break;
 
         float duration = 3f;
         float elapsed = 0f;
