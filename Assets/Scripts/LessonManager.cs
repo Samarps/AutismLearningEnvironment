@@ -6,8 +6,8 @@ using UnityEngine.UI;
 [System.Serializable]
 public class TaskDef
 {
-    public string instruction;       // e.g. "Click the red cube."
-    public string objectName;        // e.g. "RedCube"
+    public string instruction;   // e.g. "Click the red cube."
+    public string objectName;    // e.g. "RedCube"
 }
 
 public class LessonManager : MonoBehaviour
@@ -25,11 +25,11 @@ public class LessonManager : MonoBehaviour
     private int currentTask = 0;
     private bool allDone = false;
 
-    private SimpleInteractable lastHighlighted = null; // track previous correct toy
+    private SimpleInteractable lastHighlighted = null; // Tracks last correctly highlighted object
 
     void Start()
     {
-        // If no tasks are defined, make some defaults
+        // Default tasks if none assigned
         if (tasks == null || tasks.Length == 0)
         {
             tasks = new TaskDef[]
@@ -57,16 +57,16 @@ public class LessonManager : MonoBehaviour
         string expectedName = tasks[currentTask].objectName;
         var interactable = clicked.GetComponent<SimpleInteractable>();
 
-        // Reset last highlighted object (return its color to normal)
+        // Reset previous highlight
         if (lastHighlighted != null)
         {
             lastHighlighted.Highlight(false);
             lastHighlighted = null;
         }
 
+        // Correct object clicked
         if (clicked.name == expectedName)
         {
-            // Correct object clicked
             if (tracker != null)
                 tracker.FinishTask();
 
@@ -92,11 +92,14 @@ public class LessonManager : MonoBehaviour
 
                 if (rewardEffect != null)
                     rewardEffect.TriggerReward();
+
+                if (tracker != null)
+                    tracker.SaveResults(); // 💾 Save data when done
             }
         }
         else
         {
-            // Wrong object clicked (no highlight)
+            // Wrong object clicked
             if (tracker != null)
                 tracker.RegisterMistake();
 

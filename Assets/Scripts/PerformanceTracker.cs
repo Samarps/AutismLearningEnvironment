@@ -1,54 +1,73 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class PerformanceTracker : MonoBehaviour
 {
-    public int totalTasks = 0;
-    private float taskStartTime;
-    private List<float> times = new List<float>();
-    private List<int> mistakes = new List<int>();
-    private int currentMistakes = 0;
-
-    void Start()
+    [System.Serializable]
+    public class TaskResult
     {
-        taskStartTime = Time.time;
+        public string taskName;
+        public float timeTaken;
+        public int mistakes;
     }
+
+    private List<TaskResult> results = new List<TaskResult>();
+    private float taskStartTime;
+    private int currentMistakes = 0;
+    private bool taskActive = false;
 
     public void StartTask()
     {
-        currentMistakes = 0;
         taskStartTime = Time.time;
+        currentMistakes = 0;
+        taskActive = true;
+        Debug.Log("Task started");
     }
 
     public void RegisterMistake()
     {
-        currentMistakes++;
+        if (taskActive)
+        {
+            currentMistakes++;
+            Debug.Log("Mistake recorded. Total mistakes: " + currentMistakes);
+        }
     }
 
     public void FinishTask()
     {
-        float t = Time.time - taskStartTime;
-        times.Add(t);
-        mistakes.Add(currentMistakes);
-        totalTasks = times.Count;
+        if (!taskActive) return;
+
+        float timeTaken = Time.time - taskStartTime;
+        results.Add(new TaskResult
+        {
+            taskName = "Task " + (results.Count + 1),
+            timeTaken = timeTaken,
+            mistakes = currentMistakes
+        });
+
+        Debug.Log($"Task finished. Time: {timeTaken:F2}s | Mistakes: {currentMistakes}");
+        taskActive = false;
     }
 
-    // For UI/report
-    public float GetTotalTime()
+    public void SaveResults()
     {
-        float s = 0;
-        foreach(var t in times) s += t;
-        return s;
+        // Save CSV inside the project folder (Assets/PerformanceData.csv)
+        string filePath = Path.Combine(Application.dataPath, "PerformanceData.csv");
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            writer.WriteLine("Task,TimeTaken,NumberOfMistakes");
+            foreach (var r in results)
+            {
+                writer.WriteLine($"{r.taskName},{r.timeTaken:F2},{r.mistakes}");
+            }
+        }
+
+        Debug.Log($"Results saved to: {filePath}");
     }
 
-    public string GetSummary()
+    private void OnApplicationQuit()
     {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine($"Tasks completed: {times.Count}");
-        for (int i=0;i<times.Count;i++)
-            sb.AppendLine($"Task {i+1}: time={times[i]:F1}s mistakes={mistakes[i]}");
-        sb.AppendLine($"Total time: {GetTotalTime():F1}s");
-        return sb.ToString();
+        SaveResults();
     }
 }
